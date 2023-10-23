@@ -14,39 +14,80 @@ const btnNew = document.querySelector('.btn--new');
 const btnRoll = document.querySelector('.btn--roll');
 const btnHold = document.querySelector('.btn--hold');
 
-//Set initial values of elements
-score0El.textContent = 0;
-score1El.textContent = 0;
-diceEl.classList.add('hidden');
-//Set inital values of variables
+//Set variables without value
+let scores, currentScore, activePlayer, playing;
 
-const scores = [0, 0];
-let currentScore = 0;
-let activePlayer = 0;
+const init = function () {
+  //Set inital values of variables
+  scores = [0, 0];
+  currentScore = 0;
+  activePlayer = 0;
+  playing = true;
 
-document.querySelector('.btn--roll').addEventListener('click', function () {
-  // 1 generate random dice roll
-  const dice = Math.trunc(Math.random() * 6) + 1;
-  //   document.querySelector('');
+  score0El.textContent = 0;
+  score1El.textContent = 0;
+  current0El.textContent = 0;
+  current1El.textContent = 0;
 
-  // 2 display dice. remove hidden attribute && change src attribute to proper dice picture.
-  diceEl.classList.remove('hidden');
-  diceEl.src = `dice-${dice}.png`;
-  console.log(dice);
+  diceEl.classList.add('hidden');
+  player0El.classList.remove('player--winner');
+  player1El.classList.remove('player--winner');
+  player0El.classList.add('player--active');
+  player1El.classList.remove('player--active');
+  activePlayer = 0;
+  currentScore = 0;
+};
+init();
 
-  // 3 check for rolled 1. if true change to other player
-  if (dice !== 1) {
-    //add dice to current score
-    currentScore += dice;
-    //Both methods down here will work
-    document.getElementById(`current--${activePlayer}`).textContent =
-      currentScore; // can this be done through queryselector? answer: Yes
-  } else {
-    currentScore = 0;
-    document.getElementById(`current--${activePlayer}`).textContent =
-      currentScore;
-    activePlayer = activePlayer === 0 ? 1 : 0;
-    player0El.classList.toggle('player--active');
-    player1El.classList.toggle('player--active');
+const switchPlayer = function () {
+  currentScore = 0;
+  document.getElementById(`current--${activePlayer}`).textContent =
+    currentScore;
+  activePlayer = activePlayer === 0 ? 1 : 0;
+  player0El.classList.toggle('player--active');
+  player1El.classList.toggle('player--active');
+};
+
+btnRoll.addEventListener('click', function () {
+  if (playing) {
+    //Generate dice roll
+    const dice = Math.trunc(Math.random() * 6) + 1;
+    //Display value and dice
+    diceEl.classList.remove('hidden');
+    diceEl.src = `dice-${dice}.png`;
+    console.log(dice);
+    //Check for '1-roll'
+    if (dice !== 1) {
+      currentScore += dice;
+      document.getElementById(`current--${activePlayer}`).textContent =
+        currentScore;
+    } else {
+      switchPlayer();
+    }
   }
 });
+
+btnHold.addEventListener('click', function () {
+  if (playing) {
+    //Update player score
+    scores[activePlayer] += currentScore;
+    document.getElementById(`score--${activePlayer}`).textContent =
+      scores[activePlayer];
+    //Check for win-conditions
+    if (scores[activePlayer] >= 100) {
+      playing = false;
+      diceEl.classList.toggle('hidden');
+      document
+        .querySelector(`.player--${activePlayer}`)
+        .classList.add('player--winner');
+      document
+        .querySelector(`.player--${activePlayer}`)
+        .classList.remove('player--active');
+      //finish game
+    } else {
+      switchPlayer();
+    }
+  }
+});
+
+btnNew.addEventListener('click', init);
